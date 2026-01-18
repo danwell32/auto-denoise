@@ -100,6 +100,9 @@ class N2N(Denoiser):
         lower_limit: float | NDArray | None = None,
         restarts: int | None = None,
         accum_grads: bool = False,
+        ##-------------------##
+        loss_fn=None,
+        ##-------------------##
     ) -> dict[str, NDArray]:
         """
         Train the denoiser using the Noise2Noise self-supervised approach.
@@ -141,13 +144,23 @@ class N2N(Denoiser):
         generate target data based on the specified strategy. The training process involves creating pairs of input
         and target data and then training the model to minimize the difference between the predicted and target data.
         """
-        if self.data_sb is None:
-            self.data_sb = compute_scaling_selfsupervised(inp)
+        # if self.data_sb is None:
+        #     self.data_sb = compute_scaling_selfsupervised(inp)
 
-        # Rescale the datasets
-        inp = inp * self.data_sb.scale_inp - self.data_sb.bias_inp
-        tgt = tgt * self.data_sb.scale_tgt - self.data_sb.bias_tgt
+        # # Rescale the datasets
+        # inp = inp * self.data_sb.scale_inp - self.data_sb.bias_inp
+        # tgt = tgt * self.data_sb.scale_tgt - self.data_sb.bias_tgt
+        
+        ##-------------------##
+        # Rescale if we have a optional loss function
+        if loss_fn is None:
+            if self.data_sb is None:
+                self.data_sb = compute_scaling_selfsupervised(inp)
 
+            inp = inp * self.data_sb.scale_inp - self.data_sb.bias_inp
+            tgt = tgt * self.data_sb.scale_tgt - self.data_sb.bias_tgt
+        ##-------------------##
+        
         reg = self._get_regularization()
         losses = self._train_pixelmask_batched(
             inp=inp,
@@ -160,6 +173,9 @@ class N2N(Denoiser):
             lower_limit=lower_limit,
             restarts=restarts,
             accum_grads=accum_grads,
+            ##-------------------##
+            loss_fn=loss_fn,
+            ##-------------------##
         )
 
         if self.verbose:
