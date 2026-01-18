@@ -448,12 +448,22 @@ class Denoiser(ABC):
         restarts: int | None = None,
         accum_grads: bool = False,
         loss_track_type: str = "tst",
+        ##-------------------##
+        loss_fn: pt.nn.Module | None = None,   #adding optional loss
+        ##-------------------##
     ) -> dict[str, NDArray]:
         if epochs < 1:
             raise ValueError(f"Number of epochs should be >= 1, but {epochs} was passed")
 
         losses = dict(trn=[], trn_data=[], tst=[], tst_sbi=[])
-        loss_data_fn = pt.nn.MSELoss(reduction="sum")
+        # loss_data_fn = pt.nn.MSELoss(reduction="sum")
+        ##-------------------##
+        if loss_fn is not None:
+            loss_data_fn = loss_fn  
+        else:
+            loss_data_fn = pt.nn.MSELoss(reduction="sum")
+        ##-------------------##
+    
         optim = create_optimizer(self.model, algo=optimizer, learning_rate=learning_rate)
         sched = None
         if restarts is not None:
@@ -568,13 +578,22 @@ class Denoiser(ABC):
         restarts: int | None = None,
         accum_grads: bool = False,
         loss_track_type: str = "tst",
+        ##-------------------##
+        loss_fn: pt.nn.Module | None = None,   #adding optional loss
+        ##-------------------##
     ) -> dict[str, NDArray]:
         if epochs < 1:
             raise ValueError(f"Number of epochs should be >= 1, but {epochs} was passed")
 
         losses = dict(trn=[], trn_data=[], tst=[], tst_sbi=[])
 
-        loss_data_fn = pt.nn.MSELoss(reduction="sum")
+        # loss_data_fn = pt.nn.MSELoss(reduction="sum")
+        ##-------------------##
+        if loss_fn is not None:
+            loss_data_fn = loss_fn  
+        else:
+            loss_data_fn = pt.nn.MSELoss(reduction="sum")
+        ##-------------------##
         optim = create_optimizer(self.model, algo=optimizer, learning_rate=learning_rate)
         sched = None
         if restarts is not None:
